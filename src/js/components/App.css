@@ -1,0 +1,38 @@
+
+.b-page {
+    width:100%;
+   margin:0;
+   background:#eaf1f7;
+   
+   }
+   
+   .b-container {
+    background-color: white; 
+    height: 400px;
+    margin-top: 5%;
+   }
+   
+   .b-main {
+   padding: 5% 0 0;
+   
+   }
+   
+   .error {
+     color: crimson;
+   }
+ 
+   
+   .b-form {
+   padding: 15% 0 0;
+   
+   }
+   
+   .b-buttons {
+    padding: 0 0 5%;
+   }
+   
+
+   
+ 
+   
+   
