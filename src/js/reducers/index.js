@@ -1,23 +1,26 @@
 import { CONVERT } from "../constants/action-types";
 import axios from 'axios';
 
+
 var usdPrices, eurPrices = [];
 var usdRate, eurRate = {};
-var currentRate = '';
-var currentValue = '';
+var status = "";
 
-
-
+ 
 axios({
   method:'get',
   url:'https://koronapay.com/exchange/api/currencies/rates',
   responseType:'json'
 }).then(function(response) {
-
+  status = response.status;
   usdPrices = Object.values(response.data["0"].prices);
   usdRate = Object.values(response.data["0"].prices["0"])["0"];
   eurPrices = Object.values(response.data["1"].prices);
   eurRate = Object.values(response.data["1"].prices["0"])["0"];
+})
+.catch(function(e){
+  console.clear();
+  console.log(e) 
 });
 
 
@@ -36,8 +39,7 @@ function getRate (value, prices){
   
   const rangeNumber = prices.length;
   var minVolume, maxVolume;
-  currentRate = prices[0].value;
-
+  var currentRate = prices[0].value;
   
   
   for(var i=0;i<rangeNumber;i++){
@@ -49,11 +51,12 @@ function getRate (value, prices){
       
       currentRate = (currentRate * (1- (0.002 * i))).toFixed(2);
 
-      return;
+      return currentRate;
     }  
     
   }
-  return; 
+
+  return currentRate; 
 }
 
 
@@ -62,8 +65,13 @@ const rootReducer = (state = initialState, action) => {
   switch (action.type) {
     case CONVERT:
     
-    var value = action.payload.inputValue; //Значение из формы 
-    var rateValue, min, max = "";
+    if (status !== 200){
+      return state;
+    }
+
+
+    var value = action.payload.inputValue;  
+    var currentValue, rateValue, min, max = "";
     var currencyPrices = [];
     var bool = false;
 
@@ -83,11 +91,9 @@ const rootReducer = (state = initialState, action) => {
     max = currencyPrices["3"].maxVolume/100;
 
     if ((value>=min)&&(value<=max)) {
-     
-      getRate(value, currencyPrices);
 
-      rateValue = currentRate;
-      currentValue = (currentRate * value).toFixed(0);
+      rateValue =  getRate(value, currencyPrices);
+      currentValue = (rateValue * value).toFixed(0);
       bool = false;
 
     } else {
