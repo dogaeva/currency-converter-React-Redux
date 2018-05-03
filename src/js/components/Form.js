@@ -7,18 +7,33 @@ import PropTypes from 'prop-types';
 
 
 const mapStateToProps = state => {
-  return { error: state.error };
+  return { error: state.error, min: state.min, max: state.max };
 };
 
 
-function validate(value) {
+function validate(value, min, max) {
   var regexp = /^\d+$/;
   var flag = false;
+  var errorMessage = "";
+    console.log(min, max);
   
-  if (value.match(regexp)||(value === ""))
-   flag = true;
+  if (value.match(regexp)||(value === "")){
+   if ((value<min)||(value>max)){
+    errorMessage = "Сумма перевода вне диапазона";
+    flag = false;
+  } else {
+    flag = true;
+  }
+  } else {
+    //console.log(errorMessage);
+    flag = false;
+    errorMessage = "Некоректные данные"
+   }
+   console.log(flag);
+ // console.log(errorMessage);
   return {
-    value: flag
+    value: flag,
+    message: errorMessage
   };
 }
 
@@ -38,6 +53,7 @@ class ConnectedForm extends Component {
       title: "",
       condition: false,
       error: false,
+      message: "",
       currency: "usd",
     };
 
@@ -50,18 +66,29 @@ class ConnectedForm extends Component {
   handleChange(event) {
 
     this.setState({ [event.target.id]: event.target.value });
-    var flag = validate(event.target.value);
-   
+    var flag = validate(event.target.value, this.props.min, this.props.max);
+   console.log(this.props.min);
+   /*
     if (flag.value){ 
       this.setState({ error: false });
+      
       const { title } = this.state;
-      this.props.convertCurrency({inputValue: event.target.value, currency: this.state.currency});
+      this.props.convertCurrency({inputValue: event.target.value, currency: this.state.currency, error: this.state.error});
     }else {
        this.setState({ error: true });
+       this.setState({ message: flag.message });
+       this.props.convertCurrency({error: this.state.error});
        event.preventDefault();
        return;
      }
-
+*/
+    const { title } = this.state;
+    this.setState({ error: (!flag.value) });
+    this.setState({ message: flag.message });
+    this.props.convertCurrency({inputValue: event.target.value, currency: this.state.currency, error: (!flag.value)});
+    
+    // console.log(flag.value);
+    
     event.preventDefault();
   }
 
@@ -72,7 +99,7 @@ class ConnectedForm extends Component {
         currency: event.target.id
       });
 
-    this.props.convertCurrency({inputValue: this.state.title, currency: event.target.id});
+    this.props.convertCurrency({inputValue: this.state.title, currency: event.target.id, error: this.state.error});
 
     event.preventDefault();
   
@@ -97,8 +124,8 @@ class ConnectedForm extends Component {
         <h3>Введите сумму</h3>
         <div className="form-group">
           <input type="text" className="form-control" id="title" value={title} onChange={this.handleChange}/>
-          <p className={this.state.error ? "help-inline error" : "help-inline d-none"}>Некорректные данные</p>
-          <p className={this.props.error ? "help-inline error" : "help-inline d-none"}>Некорректная сумма</p>
+          <p className={this.state.error ? "help-inline error" : "help-inline d-none"}>{this.state.message}</p>
+          <p className={this.state.outOfRangeError ? "help-inline error" : "help-inline d-none"}>Некорректная сумма</p>
         </div>
       </form>
     );

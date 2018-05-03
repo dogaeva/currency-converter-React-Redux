@@ -20,7 +20,8 @@ axios({
 })
 .catch(function(e){
   console.clear();
-  console.log(e) 
+  console.log(e);
+  alert("Response Error"); 
 });
 
 
@@ -30,7 +31,9 @@ const initialState = {
   currency: 'usd',
   output: '0',
   rate: '0',
-  error: false
+  error: false,
+  min: "",
+  max: "",
 };
 
 
@@ -68,7 +71,15 @@ const rootReducer = (state = initialState, action) => {
     if (status !== 200){
       return state;
     }
-
+    
+   // console.log(action.payload.error);
+    if (action.payload.error === true){
+      
+      return {
+        ...state,
+        error: true
+      }
+    } 
 
     var value = action.payload.inputValue;  
     var currentValue, rateValue, min, max = "";
@@ -113,7 +124,9 @@ const rootReducer = (state = initialState, action) => {
         inputValue: action.payload.inputValue,
         rate: rateValue,
         error: bool,
-        output: currentValue
+        output: currentValue,
+        min: min,
+        max: max
          };
       }
       default:
